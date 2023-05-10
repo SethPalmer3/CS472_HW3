@@ -41,7 +41,7 @@ def activate_perception(model, x):
     return a
 
 # Learn weights using the perceptron algorithm
-def train_perceptron(data):
+def train_perceptron(data): # data = list[tuple[list, int]]
     # Initialize weight vector and bias
     numvars = len(data[0][0])
     numdat = len(data)
@@ -50,11 +50,11 @@ def train_perceptron(data):
 
     for _ in range(MAX_ITERS):
         for i in range(numdat):
-            a = activate_perception((w,b), data[0][:-1])
-            if data[0][-1] * a <= 0:
+            a = activate_perception((w,b), data[i][0])
+            if data[i][1] * a <= 0:
                 for d in range(numvars):
-                    w[d] += data[0][-1]*data[0]
-                b += data[0][-1]
+                    w[d] += data[i][1]*data[i][0][d]
+                b += data[i][-1]
 
     return (w, b)
 
