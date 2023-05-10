@@ -31,16 +31,31 @@ def read_data(filename):
         data.append((x, y))
     return (data, varnames)
 
+def logistic(n): # Logistic function
+    return 1 / (1 + exp(-n))
 
 # Train a logistic regression model using batch gradient descent
+'''
+eta = learning rate
+l2_reg_weight = l2 normalization scale
+'''
 def train_lr(data, eta, l2_reg_weight):
     numvars = len(data[0][0])
     w = [0.0] * numvars
     b = 0.0
 
-    #
-    # YOUR CODE HERE
-    #
+    for _ in range(MAX_ITERS):
+        pred_vect = [0.0] * len(data)
+        for d in range(len(data)):
+            # compute prediction for the dth data point
+            # place computation in pred_vect
+            pass
+        # compute the error y - y_hat
+        for e in range(len(pred_vect)):
+            #compute gradient dot(train_feat.T, error) / len(data)
+            # adjust weights : w -= eta * gradient
+            pass
+        pass
 
     return (w, b)
 
