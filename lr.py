@@ -31,13 +31,19 @@ def read_data(filename):
         data.append((x, y))
     return (data, varnames)
 
-def logistic(n): # Logistic function
+def sigmoid(n): # Logistic function
     return 1 / (1 + exp(-n))
+
+def norm(w):
+    n = 0.0
+    for i in range(len(w)):
+        n += w[i]**2
+    return sqrt(n)
 
 # Train a logistic regression model using batch gradient descent
 '''
 eta = learning rate
-l2_reg_weight = l2 normalization scale
+l2_reg_weight = lambda = L2 normaliztion scale
 '''
 def train_lr(data, eta, l2_reg_weight):
     numvars = len(data[0][0])
@@ -47,15 +53,22 @@ def train_lr(data, eta, l2_reg_weight):
     for _ in range(MAX_ITERS):
         pred_vect = [0.0] * len(data)
         for d in range(len(data)):
-            # compute prediction for the dth data point
             # place computation in pred_vect
-            pass
+            pred_vect[d] = predict_lr((w,b),data[d][0])
         # compute the error y - y_hat
-        for e in range(len(pred_vect)):
-            #compute gradient dot(train_feat.T, error) / len(data)
-            # adjust weights : w -= eta * gradient
-            pass
-        pass
+        error = [pred_vect[x] - data[x][1] for x in range(len(data))]
+        #compute gradient dot(train_feat.T, error) / len(data)
+        weight_update = [0.0] * numvars
+        w_norm = norm(w)
+        for p in range(len(data[0][0])):
+            grad = 0.0
+            for e in range(len(error)):
+                grad += data[e][0][p] * error[p]
+            weight_update[p] = grad / len(data)
+        # adjust weights : w -= eta * gradient
+        for wu in range(len(weight_update)):
+            w[wu] -= eta * weight_update[wu]
+
 
     return (w, b)
 
@@ -64,12 +77,13 @@ def train_lr(data, eta, l2_reg_weight):
 # attributes, x.
 def predict_lr(model, x):
     (w, b) = model
+    s = 0.0
+    for i in range(len(x)):
+        s += w[i] * x[i]
+    s += b
+    a = sigmoid(s)
 
-    #
-    # YOUR CODE HERE
-    #
-
-    return 0.5 # This is an random probability, fix this according to your solution
+    return a
 
 
 # Load train and test data.  Learn model.  Report accuracy.
