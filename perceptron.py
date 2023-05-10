@@ -31,31 +31,40 @@ def read_data(filename):
         data.append((x, y))
     return (data, varnames)
 
+def activate_perception(model, x):
+    (w, b) = model
+    a = 0.0
+    for d in range(len(w)):
+        a += w[d] * x[d]
+
+    a += b
+    return a
 
 # Learn weights using the perceptron algorithm
 def train_perceptron(data):
     # Initialize weight vector and bias
     numvars = len(data[0][0])
+    numdat = len(data)
     w = [0.0] * numvars
     b = 0.0
 
-    #
-    # YOUR CODE HERE!
-    #
+    for _ in range(MAX_ITERS):
+        for i in range(numdat):
+            a = activate_perception((w,b), data[0][:-1])
+            if data[0][-1] * a <= 0:
+                for d in range(numvars):
+                    w[d] += data[0][-1]*data[0]
+                b += data[0][-1]
 
     return (w, b)
-
 
 # Compute the activation for input x.
 # (NOTE: This should be a real-valued number, not simply +1/-1.)
 def predict_perceptron(model, x):
-    (w, b) = model
-
-    #
-    # YOUR CODE HERE!
-    #
-
-    return 0.0
+    a = activate_perception(model, x)
+    if a > 0:
+        return 1
+    return -1
 
 
 # Load train and test data.  Learn model.  Report accuracy.
