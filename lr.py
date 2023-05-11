@@ -34,6 +34,16 @@ def read_data(filename):
 def sigmoid(n): # Logistic function
     return 1 / (1 + exp(-n))
 
+def log_loss(y_true, y_pred):
+    return (1/log(2)) * log(1 + exp(-y_true*y_pred))
+
+def dot(w,z):
+    assert len(w) == len(z)
+    sm = 0.0
+    for i in range(len(w)):
+        sm += w[i]*z[i]
+    return sm
+
 def norm(w):
     n = 0.0
     for i in range(len(w)):
@@ -47,6 +57,7 @@ l2_reg_weight = lambda = L2 normaliztion scale
 '''
 def train_lr(data, eta, l2_reg_weight):
     numvars = len(data[0][0])
+    numexamples = len(data)
     w = [0.0] * numvars
     b = 0.0
 
@@ -56,19 +67,17 @@ def train_lr(data, eta, l2_reg_weight):
             # place computation in pred_vect
             pred_vect[d] = predict_lr((w,b),data[d][0])
         # compute the error y - y_hat
-        error = [pred_vect[x] - data[x][1] for x in range(len(data))]
-        #compute gradient dot(train_feat.T, error) / len(data)
+        # error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
+        # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
         weight_update = [0.0] * numvars
-        w_norm = norm(w)
-        for p in range(len(data[0][0])):
+        for p in range(len(data[0][0])): # run for each weight : w_i
             grad = 0.0
-            for e in range(len(error)):
-                grad += data[e][0][p] * error[p]
-            weight_update[p] = grad / len(data)
+            for e in range(len(data)): # iterate down the examples
+                grad += 1 / (1 + exp( dot(w,data[e][0]) + b )) * data[e][1] * data[e][0][p]
+            weight_update[p] = grad / numexamples  # + l2_reg_weight / numexamples * w[p]
         # adjust weights : w -= eta * gradient
         for wu in range(len(weight_update)):
             w[wu] -= eta * weight_update[wu]
-
 
     return (w, b)
 
