@@ -32,6 +32,12 @@ def read_data(filename):
     return (data, varnames)
 
 def activate_perception(model, x):
+    """
+    activate the perceptron where 
+    (w, b) is weight, bias for the model
+
+    returns tuple
+    """
     (w, b) = model
     a = 0.0
     for d in range(len(w)):
@@ -61,6 +67,13 @@ def train_perceptron(data): # data = list[tuple[list, int]]
 # Compute the activation for input x.
 # (NOTE: This should be a real-valued number, not simply +1/-1.)
 def predict_perceptron(model, x):
+    """
+    activation is used where input x and 
+    the model are used to activate the 
+    perceptron and then compared to find the sign
+
+    returns int   
+    """
     a = activate_perception(model, x)
     if a > 0:
         return 1
