@@ -34,7 +34,7 @@ def read_data(filename):
 def sigmoid(n): # Logistic function
     return 1 / (1 + exp(-n))
 
-def hypoth(model, x):
+def logit(model, x):
     (w,b) = model
     h = 0.0
     for i in range(len(x)):
@@ -43,8 +43,7 @@ def hypoth(model, x):
     return h
 
 def log_loss(y_true, y_pred):
-    # return (1/log(2)) * log(1 + exp(-y_true*y_pred))
-    return y_true - y_pred
+    return sigmoid(-y_true*y_pred)*y_true
 
 def dot(w,z):
     assert len(w) == len(z)
@@ -53,11 +52,6 @@ def dot(w,z):
         sm += w[i]*z[i]
     return sm
 
-def norm(w : list[float]):
-    n = 0.0
-    for i in range(len(w)):
-        n += w[i]**2
-    return sqrt(n)
 
 # Train a logistic regression model using batch gradient descent
 '''
@@ -74,7 +68,7 @@ def train_lr(data, eta, l2_reg_weight):
         pred_vect = [0.0] * numexamples
         for d in range(numexamples):
             # place computation in pred_vect
-            pred_vect[d] = predict_lr((w,b),data[d][0])
+            pred_vect[d] = logit((w,b),data[d][0])
         # compute the error y - y_hat
         error = [log_loss(data[x][1],pred_vect[x]) for x in range(numexamples)]
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
@@ -83,11 +77,11 @@ def train_lr(data, eta, l2_reg_weight):
             grad = 0.0
             for e in range(numexamples): # iterate down the examples
                 grad += error[e] * data[e][0][p]
-            weight_update[p] = -grad / numexamples
+            weight_update[p] = -grad + (l2_reg_weight * w[p])
         # adjust weights : w -= eta * gradient
         for wu in range(numvars):
-            w[wu] -= eta * (weight_update[wu] + (2 * l2_reg_weight * w[wu]))
-        b -= eta * (sum(error) / numexamples)
+            w[wu] -= eta * weight_update[wu] / numexamples
+        b -= eta * -sum(error) / numexamples
 
     return (w, b)
 
@@ -95,12 +89,9 @@ def train_lr(data, eta, l2_reg_weight):
 # Predict the probability of the positive label (y=+1) given the
 # attributes, x.
 def predict_lr(model, x):
-    s = hypoth(model,x)
+    s = logit(model,x)
     s = sigmoid(s)
-    if s >= 0.5:
-        return 1
-    else:
-        return -1
+    return s
 
 # Load train and test data.  Learn model.  Report accuracy.
 def main(argv):
