@@ -67,17 +67,20 @@ def train_lr(data, eta, l2_reg_weight):
             # place computation in pred_vect
             pred_vect[d] = predict_lr((w,b),data[d][0])
         # compute the error y - y_hat
-        # error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
+        error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
         weight_update = [0.0] * numvars
         for p in range(len(data[0][0])): # run for each weight : w_i
+            if p % 10 == 0:
+                print(p / len(data[0][0]))
             grad = 0.0
             for e in range(len(data)): # iterate down the examples
-                grad += 1 / (1 + exp( dot(w,data[e][0]) + b )) * data[e][1] * data[e][0][p]
+                grad += data[e][0][p] * error[e]
             weight_update[p] = grad / numexamples  # + l2_reg_weight / numexamples * w[p]
         # adjust weights : w -= eta * gradient
         for wu in range(len(weight_update)):
             w[wu] -= eta * weight_update[wu]
+        b -= eta * sum(error) / numexamples
 
     return (w, b)
 
