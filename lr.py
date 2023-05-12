@@ -34,8 +34,17 @@ def read_data(filename):
 def sigmoid(n): # Logistic function
     return 1 / (1 + exp(-n))
 
+def hypoth(model, x):
+    (w,b) = model
+    h = 0.0
+    for i in range(len(x)):
+        h+=w[i]*x[i]
+    h+=b
+    return h
+
 def log_loss(y_true, y_pred):
-    return (1/log(2)) * log(1 + exp(-y_true*y_pred))
+    # return (1/log(2)) * log(1 + exp(-y_true*y_pred))
+    return y_true - y_pred
 
 def dot(w,z):
     assert len(w) == len(z)
@@ -62,23 +71,23 @@ def train_lr(data, eta, l2_reg_weight):
     b = 0.0
 
     for _ in range(MAX_ITERS):
-        pred_vect = [0.0] * len(data)
-        for d in range(len(data)):
+        pred_vect = [0.0] * numexamples
+        for d in range(numexamples):
             # place computation in pred_vect
             pred_vect[d] = predict_lr((w,b),data[d][0])
         # compute the error y - y_hat
-        error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
+        error = [log_loss(data[x][1],pred_vect[x]) for x in range(numexamples)]
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
-        weight_update = [0.0] * numvars
-        for p in range(len(data[0][0])): # run for each weight : w_i
+        weight_update = [0.0] *len(w)
+        for p in range(numvars): # run for each weight : w_i
             grad = 0.0
-            for e in range(len(data)): # iterate down the examples
-                grad += data[e][0][p] * error[e]
-            weight_update[p] = -grad / numexamples 
+            for e in range(numexamples): # iterate down the examples
+                grad += error[e] * data[e][0][p]
+            weight_update[p] = -grad / numexamples
         # adjust weights : w -= eta * gradient
-        for wu in range(len(weight_update)):
-            w[wu] -= eta * weight_update[wu] + l2_reg_weight * w[wu]
-        b -= eta * sum(error) * (1/numexamples)
+        for wu in range(numvars):
+            w[wu] -= eta * (weight_update[wu] + (2 * l2_reg_weight * w[wu]))
+        b -= eta * (sum(error) / numexamples)
 
     return (w, b)
 
@@ -86,19 +95,12 @@ def train_lr(data, eta, l2_reg_weight):
 # Predict the probability of the positive label (y=+1) given the
 # attributes, x.
 def predict_lr(model, x):
-    (w, b) = model
-    s = 0.0
-    for i in range(len(x)):
-        s += w[i] * x[i]
-    s += b
-    # a = sigmoid(s)
-    if s > 0:
+    s = hypoth(model,x)
+    s = sigmoid(s)
+    if s >= 0.5:
         return 1
     else:
         return -1
-
-    # return a
-
 
 # Load train and test data.  Learn model.  Report accuracy.
 def main(argv):
