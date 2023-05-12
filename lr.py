@@ -71,8 +71,6 @@ def train_lr(data, eta, l2_reg_weight):
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
         weight_update = [0.0] * numvars
         for p in range(len(data[0][0])): # run for each weight : w_i
-            if p % 10 == 0:
-                print(p / len(data[0][0]))
             grad = 0.0
             for e in range(len(data)): # iterate down the examples
                 grad += data[e][0][p] * error[e]
