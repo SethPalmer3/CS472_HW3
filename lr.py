@@ -44,7 +44,7 @@ def dot(w,z):
         sm += w[i]*z[i]
     return sm
 
-def norm(w):
+def norm(w : list[float]):
     n = 0.0
     for i in range(len(w)):
         n += w[i]**2
@@ -67,17 +67,18 @@ def train_lr(data, eta, l2_reg_weight):
             # place computation in pred_vect
             pred_vect[d] = predict_lr((w,b),data[d][0])
         # compute the error y - y_hat
-        # error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
+        error = [log_loss(pred_vect[x],data[x][1]) for x in range(len(data))]
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
         weight_update = [0.0] * numvars
         for p in range(len(data[0][0])): # run for each weight : w_i
             grad = 0.0
             for e in range(len(data)): # iterate down the examples
-                grad += 1 / (1 + exp( dot(w,data[e][0]) + b )) * data[e][1] * data[e][0][p]
-            weight_update[p] = grad / numexamples  # + l2_reg_weight / numexamples * w[p]
+                grad += data[e][0][p] * error[e]
+            weight_update[p] = -grad / numexamples 
         # adjust weights : w -= eta * gradient
         for wu in range(len(weight_update)):
-            w[wu] -= eta * weight_update[wu]
+            w[wu] -= eta * weight_update[wu] + l2_reg_weight * w[wu]
+        b -= eta * sum(error) * (1/numexamples)
 
     return (w, b)
 
@@ -90,9 +91,13 @@ def predict_lr(model, x):
     for i in range(len(x)):
         s += w[i] * x[i]
     s += b
-    a = sigmoid(s)
+    # a = sigmoid(s)
+    if s > 0:
+        return 1
+    else:
+        return -1
 
-    return a
+    # return a
 
 
 # Load train and test data.  Learn model.  Report accuracy.
