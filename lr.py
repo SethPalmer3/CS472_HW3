@@ -34,10 +34,10 @@ def read_data(filename):
 def sigmoid(n): # Logistic function
     return 1 / (1 + exp(-n))
 
-def log_loss(y_true, y_pred):
+def log_loss(y_true, y_pred): # logistic loss
     return (1/log(2)) * log(1 + exp(-y_true*y_pred))
 
-def dot(w,z):
+def dot(w,z): 
     assert len(w) == len(z)
     sm = 0.0
     for i in range(len(w)):
