@@ -31,7 +31,9 @@ def read_data(filename):
         data.append((x, y))
     return (data, varnames)
 
-def sigmoid(n): # Logistic function
+def logistic(n): # Logistic function
+    if n < -200:
+        return 0.0
     return 1 / (1 + exp(-n))
 
 def logit(model, x):
@@ -42,8 +44,8 @@ def logit(model, x):
     h+=b
     return h
 
-def log_loss(y_true, y_pred):
-    return sigmoid(-y_true*y_pred)*y_true
+def log_err(y_true, y_pred):
+    return logistic(-y_true*y_pred)
 
 def dot(w,z):
     assert len(w) == len(z)
@@ -70,18 +72,21 @@ def train_lr(data, eta, l2_reg_weight):
             # place computation in pred_vect
             pred_vect[d] = logit((w,b),data[d][0])
         # compute the error y - y_hat
-        error = [log_loss(data[x][1],pred_vect[x]) for x in range(numexamples)]
+        error = [log_err(data[x][1],pred_vect[x]) for x in range(numexamples)]
         # compute gradient w/ weight regulation dot(train_feat.T, error) / len(data) + l2_reg_weight / len(data) * weights
-        weight_update = [0.0] *len(w)
+        g_w = [0.0] *len(w)
+        g_b = 0.0
         for p in range(numvars): # run for each weight : w_i
-            grad = 0.0
             for e in range(numexamples): # iterate down the examples
-                grad += error[e] * data[e][0][p]
-            weight_update[p] = -grad + (l2_reg_weight * w[p])
+                g_w[p] += -data[e][1] * error[e] * data[e][0][p]
+            g_w[p] += (l2_reg_weight * w[p])
+        for e in range(numexamples):
+            g_b += -data[e][1] * error[e]
+
         # adjust weights : w -= eta * gradient
         for wu in range(numvars):
-            w[wu] -= eta * weight_update[wu] / numexamples
-        b -= eta * -sum(error) / numexamples
+            w[wu] -= eta * g_w[wu] 
+        b -= eta * g_b
 
     return (w, b)
 
@@ -90,7 +95,6 @@ def train_lr(data, eta, l2_reg_weight):
 # attributes, x.
 def predict_lr(model, x):
     s = logit(model,x)
-    s = sigmoid(s)
     return s
 
 # Load train and test data.  Learn model.  Report accuracy.
